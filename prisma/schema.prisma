@@ -47,10 +47,8 @@ model client {
 }
 
 model socmed {
-  id        String   @id @unique @db.VarChar(100)
-  name      String   @db.VarChar(250)
+  name      String   @id @unique @db.VarChar(100)
   link      String?  @db.VarChar(250)
-  images    Json?    @db.Json
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

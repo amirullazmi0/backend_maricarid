@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpStatus, Param, ParseFilePipeBuilder, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseFilePipeBuilder, Post, Put, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { EventService } from './event.service';
 import { eventCreateRequest, eventResponse, eventUpdateRequest } from 'src/model/event.model';
 import { WebResponse } from 'src/model/web.model';
@@ -30,7 +30,7 @@ export class EventController {
         return await this.eventService.createEvent(req, images)
     }
 
-    @Post('/update/:id')
+    @Put('/:id')
     @UseInterceptors(FilesInterceptor('images'))
     async updateEvent(
         @Param('id') id: string,
@@ -46,7 +46,7 @@ export class EventController {
         return await this.eventService.updateEvent(id, req, images)
     }
 
-    @Post('/delete')
+    @Delete()
     async deleteEvent(
         @Body('id') id: string
     ) {

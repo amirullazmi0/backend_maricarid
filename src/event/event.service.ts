@@ -29,12 +29,20 @@ export class EventService {
     ) { }
 
     async findAll(): Promise<WebResponse<eventResponse | any>> {
-        const event = await this.prismaService.event.findMany()
-        return {
-            success: true,
-            message: 'get data successfully',
-            record: event.length,
-            data: event
+        try {
+            const event = await this.prismaService.event.findMany()
+            return {
+                success: true,
+                message: 'get data successfully',
+                record: event.length,
+                data: event
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: 'get data failed',
+                error: error
+            }
         }
     }
 
@@ -174,7 +182,7 @@ export class EventService {
             if (!event) {
                 return {
                     success: false,
-                    message: 'craete data failed',
+                    message: 'delete data failed',
                     error: 'Event not found'
                 }
             }
