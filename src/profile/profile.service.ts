@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { profile } from '@prisma/client';
-import { profileCreateRequest, profileResponse } from 'src/model/profile.model';
+import { profileCreateRequest, profileResponse, profileUpdateRequest } from 'src/model/profile.model';
 import { WebResponse } from 'src/model/web.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { z } from 'zod';
 
 const ProfileSchema = z.object({
+    name: z.string().min(1).max(100),
+    desc: z.string().max(1000).optional()
+})
+const ProfileUpdateSchema = z.object({
     name: z.string().min(1).max(100),
     desc: z.string().max(1000).optional()
 })
@@ -89,10 +93,103 @@ export class ProfileService {
         } catch (error) {
             return {
                 success: true,
-                message: 'create data succesfully',
+                message: 'create data failed',
                 error: error
             }
         }
 
+    }
+
+
+    async updateProfile(name: string, req: profileUpdateRequest): Promise<WebResponse<profileResponse | any>> {
+        try {
+            let profile: profile | any = null
+
+            profile = await this.prismaService.profile.findFirst({
+                where: { name: name }
+            })
+
+            if (!profile) {
+                return {
+                    success: false,
+                    message: 'get data failed',
+                    error: `data profile with name ${name} not found`
+                }
+            }
+
+            const validate = ProfileUpdateSchema.parse({
+                name: req.name,
+                desc: req.desc
+            })
+
+            if (name !== validate.name) {
+                const profile = await this.prismaService.profile.findUnique({
+                    where: { name: validate.name }
+                })
+                if (profile) {
+                    return {
+                        success: false,
+                        message: 'craete data failed',
+                        error: {
+                            path: 'name',
+                            message: `profile with name ${validate.name} has added`
+                        }
+                    }
+                }
+            }
+
+            const updateProfile = await this.prismaService.profile.update({
+                where: { name: name },
+                data: {
+                    name: validate.name,
+                    desc: validate.desc
+                }
+            })
+            return {
+                success: true,
+                message: 'update data succesfully',
+                data: updateProfile
+            }
+        } catch (error) {
+            return {
+                success: true,
+                message: 'update data failed',
+                error: error
+            }
+        }
+
+    }
+
+    async deleteProfile(name: string): Promise<WebResponse<profileResponse | any>> {
+        try {
+            let profile = await this.prismaService.profile.findFirst({
+                where: { name: name }
+            })
+
+            if (!profile) {
+                return {
+                    success: false,
+                    message: 'delete data failed',
+                    error: 'date not found'
+                }
+            }
+
+            profile = await this.prismaService.profile.delete({
+                where: { name: name },
+            })
+
+            console.log(profile);
+
+            return {
+                success: true,
+                message: 'delete data successfully',
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: 'delete data failed',
+                error: error
+            }
+        }
     }
 }

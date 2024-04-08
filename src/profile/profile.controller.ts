@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { WebResponse } from 'src/model/web.model';
 import { profileCreateRequest, profileResponse } from 'src/model/profile.model';
@@ -21,5 +21,20 @@ export class ProfileController {
         @Body() req?: profileCreateRequest
     ): Promise<WebResponse<profileResponse>> {
         return await this.profileService.createProfile(req)
+    }
+
+    @Put('/:name')
+    async update(
+        @Param('name') name: string,
+        @Body() req?: profileCreateRequest
+    ): Promise<WebResponse<profileResponse>> {
+        return await this.profileService.updateProfile(name, req)
+    }
+
+    @Delete()
+    async delete(
+        @Body('name') name: string
+    ) {
+        return await this.profileService.deleteProfile(name)
     }
 }
