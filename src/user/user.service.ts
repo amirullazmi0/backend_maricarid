@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { z } from 'zod';
 import * as bcrypt from "bcrypt";
 import path from 'path';
+import { JwtService } from '@nestjs/jwt';
 
 const AuthSchema = z.object({
     email: z.string(),
@@ -29,7 +30,8 @@ const AuthUpdateSchema = z.object({
 @Injectable()
 export class UserService {
     constructor(
-        private prismaService: PrismaService
+        private prismaService: PrismaService,
+        private jwtService: JwtService,
     ) { }
 
     async register(req: authRegisterRequest): Promise<WebResponse<authResponse>> {
@@ -79,18 +81,20 @@ export class UserService {
     }
 
     async login(req: authLoginRequest): Promise<WebResponse<authResponse>> {
+
         try {
             let { email, password } = req
 
             const validate = AuthLoginSchema.parse({
                 email: email,
                 password: password
-                
+
             })
 
-            const user = await this.prismaService.user.findFirst({
+            let user = await this.prismaService.user.findFirst({
                 where: { email: email }
             })
+
 
             if (!user) {
                 throw new HttpException({
@@ -101,25 +105,42 @@ export class UserService {
 
             const isPasswordValid = await bcrypt.compare(validate.password, user.password)
 
+
             if (!isPasswordValid) {
                 throw new HttpException({
                     success: false,
                     path: `password`,
                     message: `password is invalid`
-                }, HttpStatus.FORBIDDEN)
+                }, HttpStatus.UNAUTHORIZED)
             }
 
-            // let access_token  = 
+            const access_token = await this.jwtService.signAsync({
+                email: user.email,
+                fullName: user.fullName
+            })
+
+            user = await this.prismaService.user.update({
+                where: { email: validate.email },
+                data: {
+                    token: access_token
+                }
+            })
 
             return {
                 success: true,
                 message: 'login succesfully',
                 data: {
-
+                    email: user.email,
+                    fullName: user.fullName,
+                    token: access_token
                 }
             }
         } catch (error) {
-
+            return {
+                success: false,
+                message: 'login failed',
+                error: error
+            }
         }
     }
 }

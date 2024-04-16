@@ -6,4 +6,4 @@ import { ProfileService } from './profile.service';
   controllers: [ProfileController],
   providers: [ProfileService]
 })
-export class ProfileModule {}
+export class ProfileModule { }

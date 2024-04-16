@@ -20,7 +20,7 @@ import * as winston from 'winston';
         }),
         JwtModule.register({
             global: true,
-            secret: 'mysecret-rsaa',
+            secret: 'mySecretMaricarId',
             signOptions: {
                 expiresIn: '1h'
             }

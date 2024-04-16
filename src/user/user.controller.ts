@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { UserService } from './user.service';
 import { WebResponse } from 'src/model/web.model';
-import { authRegisterRequest, authResponse } from 'src/model/auth.model';
+import { authLoginRequest, authRegisterRequest, authResponse } from 'src/model/auth.model';
 
 @Controller('/api/auth')
 export class UserController {
@@ -14,5 +14,12 @@ export class UserController {
         @Body() req: authRegisterRequest
     ): Promise<WebResponse<authResponse>> {
         return await this.userService.register(req)
+    }
+
+    @Post('/login')
+    async login(
+        @Body() req: authLoginRequest
+    ): Promise<WebResponse<authResponse>> {
+        return await this.userService.login(req)
     }
 }
