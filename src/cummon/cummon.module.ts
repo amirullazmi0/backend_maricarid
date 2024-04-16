@@ -7,6 +7,7 @@ import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as winston from 'winston';
 import { AuthMidlleware } from './auth.middleware';
+import { MulterModule } from '@nestjs/platform-express';
 
 @Global()
 @Module({
@@ -26,7 +27,10 @@ import { AuthMidlleware } from './auth.middleware';
                 expiresIn: '7d'
             }
         }),
-        HttpModule
+        HttpModule,
+        MulterModule.register({
+            dest: 'file',
+        })
     ],
     providers: [PrismaService],
     exports: [PrismaService]

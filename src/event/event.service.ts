@@ -5,7 +5,7 @@ import { WebResponse } from 'src/model/web.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { z } from 'zod';
 import * as mime from 'mime-types';
-
+const fs = require('fs');
 const EventSchema = z.object({
     id: z.string(),
     name: z.string().max(100).min(1),
@@ -87,6 +87,17 @@ export class EventService {
                 }
             })
 
+            if (images.length > 0) {
+                for (let i = 0; i < images.length; i++) {
+                    try {
+                        const fileName = await this.saveFile(images[i], craeteEvent.images[i], './file/event');
+                        console.log(`File ${fileName} saved successfully.`);
+                    } catch (error) {
+                        console.error('Failed to save file:', error);
+                    }
+                }
+            }
+
             return {
                 success: true,
                 message: 'create data successfully',
@@ -98,6 +109,19 @@ export class EventService {
                 message: 'create data failed',
                 error: error
             }
+        }
+    }
+
+    async saveFile(file: Express.Multer.File, name: string, folderPath: string): Promise<string> {
+        try {
+            const fileName = name;
+
+            await fs.promises.writeFile(`${folderPath}/${fileName}`, file.buffer);
+
+            return fileName;
+        } catch (error) {
+            console.error('Error saving file:', error);
+            throw new Error('Failed to save file');
         }
     }
 
