@@ -1,7 +1,8 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Res } from '@nestjs/common';
 import { UserService } from './user.service';
 import { WebResponse } from 'src/model/web.model';
 import { authLoginRequest, authRegisterRequest, authResponse } from 'src/model/auth.model';
+import { Response } from 'express';
 
 @Controller('/api/auth')
 export class UserController {
@@ -18,8 +19,9 @@ export class UserController {
 
     @Post('/login')
     async login(
-        @Body() req: authLoginRequest
+        @Body() req: authLoginRequest,
+        @Res({ passthrough: true }) res: Response
     ): Promise<WebResponse<authResponse>> {
-        return await this.userService.login(req)
+        return await this.userService.login(req, res)
     }
 }

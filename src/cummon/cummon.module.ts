@@ -1,11 +1,12 @@
 import { HttpModule } from '@nestjs/axios';
-import { Global, Module } from '@nestjs/common';
+import { Global, MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { WinstonModule } from 'nest-winston';
 import { PrismaModule } from 'src/prisma/prisma.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as winston from 'winston';
+import { AuthMidlleware } from './auth.middleware';
 
 @Global()
 @Module({
@@ -22,7 +23,7 @@ import * as winston from 'winston';
             global: true,
             secret: 'mySecretMaricarId',
             signOptions: {
-                expiresIn: '1h'
+                expiresIn: '7d'
             }
         }),
         HttpModule
@@ -30,4 +31,8 @@ import * as winston from 'winston';
     providers: [PrismaService],
     exports: [PrismaService]
 })
-export class CummonModule { }
+export class CummonModule implements NestModule {
+    configure(consumer: MiddlewareConsumer) {
+        consumer.apply(AuthMidlleware).forRoutes('/api/*')
+    }
+}

@@ -2,6 +2,8 @@ import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common'
 import { SocmedService } from './socmed.service';
 import { WebResponse } from 'src/model/web.model';
 import { socmedCreateRequest, socmedResponse, socmedUpdateRequest } from 'src/model/socmed.model';
+import { Auth } from 'src/cummon/auth.decorator';
+import { user } from '@prisma/client';
 
 @Controller('/api/socmed')
 export class SocmedController {
@@ -16,6 +18,7 @@ export class SocmedController {
 
     @Post()
     async create(
+        @Auth() user: user,
         @Body() req: socmedCreateRequest
     ): Promise<WebResponse<socmedResponse>> {
         return await this.socmedService.create(req)
@@ -23,6 +26,7 @@ export class SocmedController {
 
     @Put('/:name')
     async upate(
+        @Auth() user: user,
         @Param('name') name: string,
         @Body() req: socmedUpdateRequest
     ): Promise<WebResponse<socmedResponse>> {
@@ -31,6 +35,7 @@ export class SocmedController {
 
     @Delete()
     async deleteEvent(
+        @Auth() user: user,
         @Body('name') name: string
     ) {
         return await this.socmedService.delete(name)

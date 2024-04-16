@@ -7,6 +7,7 @@ import { z } from 'zod';
 import * as bcrypt from "bcrypt";
 import path from 'path';
 import { JwtService } from '@nestjs/jwt';
+import { Response } from 'express';
 
 const AuthSchema = z.object({
     email: z.string(),
@@ -80,7 +81,7 @@ export class UserService {
         }
     }
 
-    async login(req: authLoginRequest): Promise<WebResponse<authResponse>> {
+    async login(req: authLoginRequest, res: Response): Promise<WebResponse<authResponse>> {
 
         try {
             let { email, password } = req
@@ -124,6 +125,13 @@ export class UserService {
                 data: {
                     token: access_token
                 }
+            })
+
+            const expirationTime = 7 * 24 * 60 * 60 * 1000;
+
+            res.cookie('access-token', user.token, {
+                maxAge: expirationTime,
+                httpOnly: true
             })
 
             return {

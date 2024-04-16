@@ -3,6 +3,8 @@ import { EventService } from './event.service';
 import { eventCreateRequest, eventResponse, eventUpdateRequest } from 'src/model/event.model';
 import { WebResponse } from 'src/model/web.model';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { Auth } from 'src/cummon/auth.decorator';
+import { user } from '@prisma/client';
 
 @Controller('/api/event')
 export class EventController {
@@ -18,6 +20,7 @@ export class EventController {
     @Post()
     @UseInterceptors(FilesInterceptor('images'))
     async createEvent(
+        @Auth() user: user,
         @Body() req: eventCreateRequest,
         @UploadedFiles(
             new ParseFilePipeBuilder()
@@ -33,6 +36,7 @@ export class EventController {
     @Put('/:id')
     @UseInterceptors(FilesInterceptor('images'))
     async updateEvent(
+        @Auth() user: user,
         @Param('id') id: string,
         @Body() req: eventUpdateRequest,
         @UploadedFiles(
@@ -48,6 +52,7 @@ export class EventController {
 
     @Delete()
     async deleteEvent(
+        @Auth() user: user,
         @Body('id') id: string
     ) {
         return await this.eventService.deleteEvent(id)

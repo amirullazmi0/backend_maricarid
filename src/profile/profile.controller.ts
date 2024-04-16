@@ -2,6 +2,8 @@ import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/
 import { ProfileService } from './profile.service';
 import { WebResponse } from 'src/model/web.model';
 import { profileCreateRequest, profileResponse } from 'src/model/profile.model';
+import { user } from '@prisma/client';
+import { Auth } from 'src/cummon/auth.decorator';
 
 @Controller('/api/profile')
 export class ProfileController {
@@ -18,6 +20,7 @@ export class ProfileController {
 
     @Post()
     async create(
+        @Auth() user: user,
         @Body() req?: profileCreateRequest
     ): Promise<WebResponse<profileResponse>> {
         return await this.profileService.createProfile(req)
@@ -25,6 +28,7 @@ export class ProfileController {
 
     @Put('/:name')
     async update(
+        @Auth() user: user,
         @Param('name') name: string,
         @Body() req?: profileCreateRequest
     ): Promise<WebResponse<profileResponse>> {
@@ -33,6 +37,7 @@ export class ProfileController {
 
     @Delete()
     async delete(
+        @Auth() user: user,
         @Body('name') name: string
     ) {
         return await this.profileService.deleteProfile(name)
