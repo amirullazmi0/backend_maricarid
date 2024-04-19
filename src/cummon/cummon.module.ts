@@ -28,9 +28,6 @@ import { MulterModule } from '@nestjs/platform-express';
             }
         }),
         HttpModule,
-        MulterModule.register({
-            dest: 'file',
-        })
     ],
     providers: [PrismaService],
     exports: [PrismaService]

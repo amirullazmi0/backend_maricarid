@@ -5,6 +5,8 @@ import { WebResponse } from 'src/model/web.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { z } from 'zod';
 import * as mime from 'mime-types';
+import { ConfigService } from '@nestjs/config';
+import path from 'path';
 const fs = require('fs');
 const EventSchema = z.object({
     id: z.string(),
@@ -21,12 +23,13 @@ const EventUpdateSchema = z.object({
 });
 
 
-
 @Injectable()
 export class EventService {
     constructor(
-        private prismaService: PrismaService
+        private prismaService: PrismaService,
+        private configService: ConfigService
     ) { }
+
 
     async findAll(): Promise<WebResponse<eventResponse | any>> {
         try {
@@ -48,11 +51,14 @@ export class EventService {
 
     async createEvent(req: eventCreateRequest, images?: Array<Express.Multer.File>): Promise<WebResponse<eventResponse | any>> {
         try {
+            const baseUrl = this.configService.get('BaseURL')
+            const path = '/file/event/'
             let { name, desc } = req
 
             let id = randomUUID()
 
             let dataImages = []
+            let nameImages = []
 
             if (images) {
                 for (let i = 0; i < images.length; i++) {
@@ -65,9 +71,11 @@ export class EventService {
                         }
                     }
                     const date = new Date
-                    const imagesName = 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype);
+                    // const url = 
+                    const imagesName = baseUrl + path + 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype);
 
-                    dataImages.push(imagesName)
+                    dataImages.push(baseUrl + path + 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
+                    nameImages.push('EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
                 }
             }
 
@@ -90,7 +98,7 @@ export class EventService {
             if (images.length > 0) {
                 for (let i = 0; i < images.length; i++) {
                     try {
-                        const fileName = await this.saveFile(images[i], craeteEvent.images[i], './file/event');
+                        const fileName = await this.saveFile(images[i], nameImages[i], './public/file/event');
                         console.log(`File ${fileName} saved successfully.`);
                     } catch (error) {
                         console.error('Failed to save file:', error);
