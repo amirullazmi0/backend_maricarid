@@ -22,6 +22,7 @@ export class EventController {
     async createEvent(
         @Auth() user: user,
         @Body() req: eventCreateRequest,
+        // @Body('images') images: any
         @UploadedFiles(
             new ParseFilePipeBuilder()
                 .build({
@@ -30,6 +31,7 @@ export class EventController {
                 }),
         ) images?: Array<Express.Multer.File>,
     ): Promise<any> {
+
         return await this.eventService.createEvent(req, images)
     }
 

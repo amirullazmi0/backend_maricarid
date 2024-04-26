@@ -8,6 +8,7 @@ import * as bcrypt from "bcrypt";
 import path from 'path';
 import { JwtService } from '@nestjs/jwt';
 import { Response } from 'express';
+import { user } from '@prisma/client';
 
 const AuthSchema = z.object({
     email: z.string(),
@@ -148,6 +149,16 @@ export class UserService {
                 success: false,
                 message: 'login failed',
                 error: error
+            }
+        }
+    }
+
+    async checkAuth(user: user): Promise<WebResponse<any>> {
+        return {
+            success: true,
+            data: {
+                email: user.email,
+                fullName: user.fullName
             }
         }
     }

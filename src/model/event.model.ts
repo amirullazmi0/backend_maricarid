@@ -1,12 +1,12 @@
 export class eventCreateRequest {
     name: string
     desc?: string
-    images?: JSON
+    // images?: JSON
 }
 export class eventUpdateRequest {
     name?: string
     desc?: string
-    images?: JSON
+    // images?: JSON
 }
 
 export class eventResponse {

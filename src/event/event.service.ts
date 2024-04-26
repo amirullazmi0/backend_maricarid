@@ -33,7 +33,11 @@ export class EventService {
 
     async findAll(): Promise<WebResponse<eventResponse | any>> {
         try {
-            const event = await this.prismaService.event.findMany()
+            const event = await this.prismaService.event.findMany({
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            })
             return {
                 success: true,
                 message: 'get data successfully',
@@ -51,6 +55,7 @@ export class EventService {
 
     async createEvent(req: eventCreateRequest, images?: Array<Express.Multer.File>): Promise<WebResponse<eventResponse | any>> {
         try {
+
             const baseUrl = this.configService.get('BaseURL')
             const path = '/file/event/'
             let { name, desc } = req
@@ -71,7 +76,6 @@ export class EventService {
                         }
                     }
                     const date = new Date
-                    // const url = 
                     const imagesName = baseUrl + path + 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype);
 
                     dataImages.push(baseUrl + path + 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
@@ -94,6 +98,7 @@ export class EventService {
                     images: validate.images
                 }
             })
+
 
             if (images.length > 0) {
                 for (let i = 0; i < images.length; i++) {
