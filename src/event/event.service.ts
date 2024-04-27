@@ -7,6 +7,7 @@ import { z } from 'zod';
 import * as mime from 'mime-types';
 import { ConfigService } from '@nestjs/config';
 import path from 'path';
+import { event } from '@prisma/client';
 const fs = require('fs');
 const EventSchema = z.object({
     id: z.string(),
@@ -31,13 +32,23 @@ export class EventService {
     ) { }
 
 
-    async findAll(): Promise<WebResponse<eventResponse | any>> {
+    async findAll(name?: string): Promise<WebResponse<eventResponse | any>> {
         try {
-            const event = await this.prismaService.event.findMany({
-                orderBy: {
-                    createdAt: 'desc'
-                }
-            })
+            let event = null
+            if (name && name.length > 0) {
+                event = await this.prismaService.event.findFirst({
+                    where: {
+                        name: name
+                    }
+                })
+            } else {
+                event = await this.prismaService.event.findMany({
+                    orderBy: {
+                        createdAt: 'desc'
+                    }
+                })
+            }
+
             return {
                 success: true,
                 message: 'get data successfully',
@@ -52,6 +63,7 @@ export class EventService {
             }
         }
     }
+
 
     async createEvent(req: eventCreateRequest, images?: Array<Express.Multer.File>): Promise<WebResponse<eventResponse | any>> {
         try {

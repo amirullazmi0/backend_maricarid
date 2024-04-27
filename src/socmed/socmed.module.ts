@@ -6,4 +6,4 @@ import { SocmedService } from './socmed.service';
   controllers: [SocmedController],
   providers: [SocmedService]
 })
-export class SocmedModule {}
+export class SocmedModule { }

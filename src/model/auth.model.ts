@@ -25,3 +25,8 @@ export class authResponse {
     createdAt?: Date
     updatedAt?: Date
 }
+
+export class reqUpdatePassword {
+    newPassword?: string
+    confirmNewPassword?: string
+}

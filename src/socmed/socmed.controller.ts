@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { SocmedService } from './socmed.service';
 import { WebResponse } from 'src/model/web.model';
 import { socmedCreateRequest, socmedResponse, socmedUpdateRequest } from 'src/model/socmed.model';
@@ -12,8 +12,10 @@ export class SocmedController {
     ) { }
 
     @Get()
-    async getAll(): Promise<WebResponse<socmedResponse>> {
-        return await this.socmedService.findAll()
+    async getAll(
+        @Query('name') name?: string
+    ): Promise<WebResponse<socmedResponse>> {
+        return await this.socmedService.findAll(name)
     }
 
     @Post()

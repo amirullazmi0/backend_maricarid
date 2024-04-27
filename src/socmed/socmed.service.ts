@@ -21,14 +21,25 @@ export class SocmedService {
         private prismaService: PrismaService
     ) { }
 
-    async findAll(): Promise<WebResponse<socmedResponse | any>> {
+    async findAll(name?: string): Promise<WebResponse<socmedResponse | any>> {
         try {
-            const socmend = await this.prismaService.socmed.findMany()
+            let socmed = null
+
+            if (name && name.length > 0) {
+                socmed = await this.prismaService.socmed.findFirst({
+                    where: {
+                        name: name
+                    }
+                })
+            } else {
+
+                socmed = await this.prismaService.socmed.findMany()
+            }
             return {
                 success: true,
                 message: 'get data successfully',
-                record: socmend.length,
-                data: socmend
+                record: socmed.length,
+                data: socmed
             }
         } catch (error) {
             return {
@@ -87,7 +98,6 @@ export class SocmedService {
                 where: { name: name }
             })
 
-
             if (!socmed) {
                 return {
                     success: false,
@@ -96,30 +106,32 @@ export class SocmedService {
                 }
             }
 
-            if (socmed.name !== req.name) {
-                const unique = await this.prismaService.socmed.findFirst({
-                    where: { name: req.name }
-                })
+            // if (socmed.name !== req.name) {
+            //     const unique = await this.prismaService.socmed.findFirst({
+            //         where: { name: req.name }
+            //     })
 
-                if (unique) {
-                    return {
-                        success: false,
-                        message: 'get data failed',
-                        error: `socmed with name ${unique.name} has added`
-                    }
-                }
-            }
+            //     if (unique) {
+            //         return {
+            //             success: false,
+            //             message: 'get data failed',
+            //             error: `socmed with name ${unique.name} has added`
+            //         }
+            //     }
+            // }
+
+
+            console.log('validate', req);
 
             const validate = SocmedUpdateSchema.parse({
-                name: req.name.length! > 0 ? req.name : socmed.name,
-                link: req.link.length! > 0 ? req.link : socmed.link
+                name: socmed.name,
+                link: req.link.length > 0 ? req.link : socmed.link
             })
 
             socmed == await this.prismaService.socmed.update({
                 where: { name: name },
                 data: {
-                    name: validate.name,
-                    link: validate.name
+                    link: validate.link
                 }
             })
 
@@ -155,7 +167,6 @@ export class SocmedService {
                 where: { name: name },
             })
 
-            console.log(socmed);
 
             return {
                 success: true,

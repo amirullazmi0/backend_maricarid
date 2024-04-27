@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { authLoginRequest, authRegisterRequest, authResponse } from 'src/model/auth.model';
+import { authLoginRequest, authRegisterRequest, authResponse, reqUpdatePassword } from 'src/model/auth.model';
 import { WebResponse } from 'src/model/web.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { z } from 'zod';
@@ -27,6 +27,11 @@ const AuthUpdateSchema = z.object({
     fullName: z.string().min(1).max(100).optional(),
     password: z.string().min(1).max(100).optional(),
     token: z.string().max(1000).optional()
+})
+
+const updatePasswordSchema = z.object({
+    newPassword: z.string().min(1).max(100),
+    confirmNewPassword: z.string().min(1).max(100),
 })
 
 @Injectable()
@@ -159,6 +164,50 @@ export class UserService {
             data: {
                 email: user.email,
                 fullName: user.fullName
+            }
+        }
+    }
+
+    async updatePassword(email: string, req: reqUpdatePassword): Promise<WebResponse<any>> {
+        try {
+            const validate = updatePasswordSchema.parse({
+                newPassword: req.newPassword,
+                confirmNewPassword: req.confirmNewPassword
+
+            })
+
+            if (validate.newPassword !== validate.confirmNewPassword) {
+                return {
+                    success: false,
+                    message: 'update password failed',
+                    error: {
+                        path: 'password',
+                        message: 'confirm password must be same with new password'
+                    }
+                }
+            }
+
+            const updatePassword = await this.prismaService.user.update({
+                where: {
+                    email: email
+                },
+                data: {
+                    password: validate.newPassword
+                }
+            })
+
+            console.log(updatePassword);
+
+            return {
+                success: true,
+                message: 'update password successfully',
+
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: 'update password failed',
+                error: error
             }
         }
     }

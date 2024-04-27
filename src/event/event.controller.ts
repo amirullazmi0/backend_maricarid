@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseFilePipeBuilder, Post, Put, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseFilePipeBuilder, Post, Put, Query, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { EventService } from './event.service';
 import { eventCreateRequest, eventResponse, eventUpdateRequest } from 'src/model/event.model';
 import { WebResponse } from 'src/model/web.model';
@@ -13,8 +13,10 @@ export class EventController {
     ) { }
 
     @Get()
-    async get() {
-        return await this.eventService.findAll()
+    async get(
+        @Query('name') name?: any
+    ) {
+        return await this.eventService.findAll(name)
     }
 
     @Post()

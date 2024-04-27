@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Res } from '@nestjs/common';
 import { UserService } from './user.service';
 import { WebResponse } from 'src/model/web.model';
-import { authLoginRequest, authRegisterRequest, authResponse } from 'src/model/auth.model';
+import { authLoginRequest, authRegisterRequest, authResponse, reqUpdatePassword } from 'src/model/auth.model';
 import { Response } from 'express';
 import { Auth } from 'src/cummon/auth.decorator';
 import { user } from '@prisma/client';
@@ -33,5 +33,14 @@ export class UserController {
         @Auth() user: user
     ): Promise<WebResponse<any>> {
         return await this.userService.checkAuth(user)
+    }
+
+    @Put('/update-password/:email')
+    async updatePassword(
+        @Auth() user: user,
+        @Param('email') email: string,
+        @Body() req: reqUpdatePassword
+    ): Promise<WebResponse<any>> {
+        return await this.userService.updatePassword(email, req)
     }
 }
