@@ -88,7 +88,6 @@ export class EventService {
                         }
                     }
                     const date = new Date
-                    const imagesName = baseUrl + path + 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype);
 
                     dataImages.push(baseUrl + path + 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
                     nameImages.push('EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
@@ -112,7 +111,7 @@ export class EventService {
             })
 
 
-            if (images.length > 0) {
+            if (images && images.length > 0) {
                 for (let i = 0; i < images.length; i++) {
                     try {
                         const fileName = await this.saveFile(images[i], nameImages[i], './public/file/event');
@@ -167,46 +166,60 @@ export class EventService {
             }
 
             let { name, desc } = req
+            const baseUrl = this.configService.get('BaseURL')
 
             let dataImages = event.images
+            let nameImages = []
 
             if (images) {
-                const dd = []
+                dataImages = []
                 for (let i = 0; i < images.length; i++) {
                     const mimeType = mime.lookup(images[i].originalname);
                     if (!mimeType || !['image/jpeg', 'image/jpg', 'image/png'].includes(mimeType)) {
                         return {
                             success: false,
-                            message: 'craete data failed',
+                            message: 'create data failed',
                             error: 'files must have images extensions [jpg, jpeg, png]'
                         }
                     }
                     const date = new Date
-                    const imagesName = 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype);
-
-                    dd.push(imagesName)
+                    
+                    dataImages.push(baseUrl + path + 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
+                    nameImages.push('EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
                 }
-
-                dataImages = dd
             }
-
+            
+            
+            
             const validate = EventUpdateSchema.parse({
                 id: id,
                 name: name,
                 desc: desc,
                 images: dataImages
             })
-
+            
+            
             const updateEvent = await this.prismaService.event.update({
                 where: {
-                    id: event.id
+                    id: id
                 },
                 data: {
                     name: validate.name,
                     desc: validate.desc,
-                    images: validate.images.length! > 0 ? validate.images : event.images
+                    images: validate.images
                 }
             })
+
+            if (images && images.length > 0) {
+                for (let i = 0; i < images.length; i++) {
+                    try {
+                        const fileName = await this.saveFile(images[i], nameImages[i], './public/file/event');
+                        console.log(`File ${fileName} saved successfully.`);
+                    } catch (error) {
+                        console.error('Failed to save file:', error);
+                    }
+                }
+            }
 
             return {
                 success: true,
@@ -241,7 +254,6 @@ export class EventService {
             })
 
             console.log(event);
-
 
             return {
                 success: true,

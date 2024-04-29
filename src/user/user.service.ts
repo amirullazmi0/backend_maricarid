@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { authLoginRequest, authRegisterRequest, authResponse, reqUpdatePassword } from 'src/model/auth.model';
+import { authLoginRequest, authRegisterRequest, authResponse, reqUpdatePassword, reqUpdateUser } from 'src/model/auth.model';
 import { WebResponse } from 'src/model/web.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { z } from 'zod';
@@ -168,7 +168,7 @@ export class UserService {
         }
     }
 
-    async updatePassword(email: string, req: reqUpdatePassword): Promise<WebResponse<any>> {
+    async updatePassword(user: user, req: reqUpdatePassword): Promise<WebResponse<any>> {
         try {
             const validate = updatePasswordSchema.parse({
                 newPassword: req.newPassword,
@@ -186,27 +186,54 @@ export class UserService {
                     }
                 }
             }
-
             const updatePassword = await this.prismaService.user.update({
                 where: {
-                    email: email
+                    email: user.email
                 },
                 data: {
-                    password: validate.newPassword
+                    password: await bcrypt.hash(validate.newPassword, 10)
                 }
             })
-
-            console.log(updatePassword);
 
             return {
                 success: true,
                 message: 'update password successfully',
-
+                data: {
+                    email: updatePassword.email,
+                    fullName: updatePassword.fullName
+                }
             }
         } catch (error) {
             return {
                 success: false,
                 message: 'update password failed',
+                error: error
+            }
+        }
+    }
+
+    async updateUser(user: user, req: reqUpdateUser): Promise<WebResponse<authResponse>> {
+        try {
+            const updateUser = await this.prismaService.user.update({
+                where: { email: user.email },
+                data: {
+                    fullName: req.fullName,
+                    email: req.email
+                }
+            })
+
+            return {
+                success: true,
+                message: 'update data successfully',
+                data: {
+                    fullName: updateUser.fullName,
+                    email: updateUser.email
+                }
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: 'update date failed',
                 error: error
             }
         }

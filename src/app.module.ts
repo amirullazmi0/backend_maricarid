@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { SocmedModule } from './socmed/socmed.module';
+import { ClientModule } from './client/client.module';
 
 @Module({
   imports: [
@@ -14,7 +15,8 @@ import { SocmedModule } from './socmed/socmed.module';
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '../../', 'public'),
       exclude: ['/api/(.*)'],
-    }), 
+    }),
+    ClientModule, 
   ],
   controllers: [],
   providers: [],

@@ -30,3 +30,9 @@ export class reqUpdatePassword {
     newPassword?: string
     confirmNewPassword?: string
 }
+
+export class reqUpdateUser {
+    email?: string
+    fullName?: string
+}
+

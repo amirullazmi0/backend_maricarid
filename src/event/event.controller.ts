@@ -24,7 +24,6 @@ export class EventController {
     async createEvent(
         @Auth() user: user,
         @Body() req: eventCreateRequest,
-        // @Body('images') images: any
         @UploadedFiles(
             new ParseFilePipeBuilder()
                 .build({

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { profile } from '@prisma/client';
+import { log } from 'console';
 import { profileCreateRequest, profileResponse, profileUpdateRequest } from 'src/model/profile.model';
 import { WebResponse } from 'src/model/web.model';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -10,7 +11,7 @@ const ProfileSchema = z.object({
     desc: z.string().max(1000).optional()
 })
 const ProfileUpdateSchema = z.object({
-    name: z.string().min(1).max(100),
+    name: z.string().min(1).max(100).optional(),
     desc: z.string().max(1000).optional()
 })
 
@@ -109,6 +110,10 @@ export class ProfileService {
                 where: { name: name }
             })
 
+            console.log('profile', profile);
+            console.log('req', req);
+
+
             if (!profile) {
                 return {
                     success: false,
@@ -122,7 +127,7 @@ export class ProfileService {
                 desc: req.desc
             })
 
-            if (name !== validate.name) {
+            if (validate.name && validate.name.length > 0 && name !== validate.name) {
                 const profile = await this.prismaService.profile.findUnique({
                     where: { name: validate.name }
                 })
@@ -141,10 +146,13 @@ export class ProfileService {
             const updateProfile = await this.prismaService.profile.update({
                 where: { name: name },
                 data: {
-                    name: validate.name,
+                    name: validate.name ? validate.name : name,
                     desc: validate.desc
                 }
             })
+
+            console.log('update', updateProfile);
+
             return {
                 success: true,
                 message: 'update data succesfully',
@@ -152,7 +160,7 @@ export class ProfileService {
             }
         } catch (error) {
             return {
-                success: true,
+                success: false,
                 message: 'update data failed',
                 error: error
             }
