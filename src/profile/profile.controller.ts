@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { WebResponse } from 'src/model/web.model';
-import { profileCreateRequest, profileResponse } from 'src/model/profile.model';
+import { profileCreateRequest, profileResponse, profileUpdateRequest, visiMisiRequest } from 'src/model/profile.model';
 import { user } from '@prisma/client';
 import { Auth } from 'src/cummon/auth.decorator';
 
@@ -30,9 +30,17 @@ export class ProfileController {
     async update(
         @Auth() user: user,
         @Param('name') name: string,
-        @Body() req?: profileCreateRequest
+        @Body() req?: profileUpdateRequest
     ): Promise<WebResponse<profileResponse>> {
         return await this.profileService.updateProfile(name, req)
+    }
+
+    @Put('/update/visimisi')
+    async updateVisiMisi(
+        @Auth() user: user,
+        @Body() req?: visiMisiRequest
+    ): Promise<WebResponse<profileResponse>> {
+        return await this.profileService.updateVisiMisi(req)
     }
 
     @Delete()

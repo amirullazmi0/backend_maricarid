@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { profile } from '@prisma/client';
 import { log } from 'console';
-import { profileCreateRequest, profileResponse, profileUpdateRequest } from 'src/model/profile.model';
+import { profileCreateRequest, profileResponse, profileUpdateRequest, visiMisiRequest } from 'src/model/profile.model';
 import { WebResponse } from 'src/model/web.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { z } from 'zod';
@@ -166,6 +166,36 @@ export class ProfileService {
             }
         }
 
+    }
+
+    async updateVisiMisi(req: visiMisiRequest): Promise<WebResponse<profileResponse | any>> {
+        try {
+            const { descVisi, descMisi } = req
+
+            let update: profile
+
+            update = await this.prismaService.profile.update({
+                where: { name: 'visi' },
+                data: {
+                    desc: descVisi
+                }
+            })
+
+            update = await this.prismaService.profile.update({
+                where: { name: 'misi' },
+                data: {
+                    desc: descMisi
+                }
+            })
+
+
+            return {
+                success: true,
+                message: 'update visi & misi successfully',
+            }
+        } catch (error) {
+
+        }
     }
 
     async deleteProfile(name: string): Promise<WebResponse<profileResponse | any>> {

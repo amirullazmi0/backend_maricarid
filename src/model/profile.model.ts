@@ -14,3 +14,8 @@ export class profileResponse {
     createdAt?: Date
     updatedAt?: Date
 }
+
+export class visiMisiRequest {
+    descVisi: string
+    descMisi: string
+}

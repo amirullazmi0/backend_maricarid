@@ -32,15 +32,22 @@ export class EventService {
     ) { }
 
 
-    async findAll(name?: string): Promise<WebResponse<eventResponse | any>> {
+    async findAll(id?: string): Promise<WebResponse<eventResponse | any>> {
         try {
             let event = null
-            if (name && name.length > 0) {
+            if (id && id.length > 0) {
                 event = await this.prismaService.event.findFirst({
                     where: {
-                        name: name
+                        id: id
                     }
                 })
+
+                if (!event) {
+                    return {
+                        success: false,
+                        message: 'data not found'
+                    }
+                }
             } else {
                 event = await this.prismaService.event.findMany({
                     orderBy: {
@@ -167,12 +174,12 @@ export class EventService {
 
             let { name, desc } = req
             const baseUrl = this.configService.get('BaseURL')
+            const path = '/file/event/'
 
-            let dataImages = event.images
+            let dataImages = [event.images]
             let nameImages = []
 
             if (images) {
-                dataImages = []
                 for (let i = 0; i < images.length; i++) {
                     const mimeType = mime.lookup(images[i].originalname);
                     if (!mimeType || !['image/jpeg', 'image/jpg', 'image/png'].includes(mimeType)) {
@@ -183,22 +190,22 @@ export class EventService {
                         }
                     }
                     const date = new Date
-                    
-                    dataImages.push(baseUrl + path + 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
+
+                    dataImages = [(baseUrl + path + 'EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))]
                     nameImages.push('EV' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
                 }
             }
-            
-            
-            
+
+
+
             const validate = EventUpdateSchema.parse({
                 id: id,
                 name: name,
                 desc: desc,
                 images: dataImages
             })
-            
-            
+
+
             const updateEvent = await this.prismaService.event.update({
                 where: {
                     id: id

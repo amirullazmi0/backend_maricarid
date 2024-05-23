@@ -31,6 +31,14 @@ export class SocmedService {
                         name: name
                     }
                 })
+
+                if (!socmed) {
+                    return {
+                        success: false,
+                        message: `data not found`
+                    }
+                }
+
             } else {
 
                 socmed = await this.prismaService.socmed.findMany()

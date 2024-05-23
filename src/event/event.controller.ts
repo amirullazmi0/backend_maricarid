@@ -14,9 +14,9 @@ export class EventController {
 
     @Get()
     async get(
-        @Query('name') name?: any
+        @Query('id') id?: string
     ) {
-        return await this.eventService.findAll(name)
+        return await this.eventService.findAll(id)
     }
 
     @Post()

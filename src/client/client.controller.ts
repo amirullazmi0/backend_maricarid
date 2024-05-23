@@ -1,8 +1,8 @@
-import { Body, Controller, Get, HttpStatus, ParseFilePipeBuilder, Post, Query, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseFilePipeBuilder, Post, Put, Query, UploadedFile, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { ClientService } from './client.service';
 import { WebResponse } from 'src/model/web.model';
-import { clientCreateRequest, clientResponse } from 'src/model/client.model';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { clientCreateRequest, clientResponse, clientUpdateRequest } from 'src/model/client.model';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Auth } from 'src/cummon/auth.decorator';
 import { user } from '@prisma/client';
 
@@ -14,25 +14,49 @@ export class ClientController {
 
     @Get()
     async get(
-        @Query('id') id?: any
+        @Query('id') id?: string
     ): Promise<WebResponse<clientResponse>> {
         return await this.clientService.findAll(id)
     }
 
     @Post()
-    @UseInterceptors(FileInterceptor('images'))
+    @UseInterceptors(FilesInterceptor('images'))
     async createClient(
-        // @Auth() user: user,
+        @Auth() user: user,
         @Body() req: clientCreateRequest,
-        @UploadedFile(
+        @UploadedFiles(
             new ParseFilePipeBuilder()
                 .build({
                     errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
                     fileIsRequired: false
                 }),
-        ) images?: Express.Multer.File,
+        ) images?: Array<Express.Multer.File>,
     ): Promise<WebResponse<any>> {
+        return await this.clientService.createClient(req, images)
+    }
 
-        return await this.clientService.createEvent(req, images)
+    @Put(`/:id`)
+    @UseInterceptors(FilesInterceptor('images'))
+    async updateClient(
+        @Auth() user: user,
+        @Param('id') id: string,
+        @Body() req: clientUpdateRequest,
+        @UploadedFiles(
+            new ParseFilePipeBuilder()
+                .build({
+                    errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+                    fileIsRequired: false
+                }),
+        ) images?: Array<Express.Multer.File>,
+    ): Promise<WebResponse<any>> {
+        return await this.clientService.updateClient(id, req, images)
+    }
+
+    @Delete()
+    async deleteClient(
+        @Auth() user: user,
+        @Body('id') id: string
+    ) {
+        return await this.clientService.deleteClient(id)
     }
 }

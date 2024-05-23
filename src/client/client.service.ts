@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { randomUUID } from 'crypto';
-import { clientCreateRequest, clientResponse } from 'src/model/client.model';
+import { clientCreateRequest, clientResponse, clientUpdateRequest } from 'src/model/client.model';
 import { WebResponse } from 'src/model/web.model';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { z } from 'zod';
@@ -62,7 +62,7 @@ export class ClientService {
         }
     }
 
-    async createEvent(req: clientCreateRequest, images?: Express.Multer.File): Promise<WebResponse<clientResponse | any>> {
+    async createClient(req: clientCreateRequest, images?: Array<Express.Multer.File>): Promise<WebResponse<clientResponse | any>> {
         try {
             const baseUrl = this.configService.get('BaseURL')
             const path = '/file/client/'
@@ -70,22 +70,25 @@ export class ClientService {
 
             let id = randomUUID()
 
-            let dataImages = ''
-            let nameImages = ''
+            let dataImages = []
+            let nameImages = []
+
 
             if (images) {
-                const mimeType = mime.lookup(images.originalname);
-                if (!mimeType || !['image/jpeg', 'image/jpg', 'image/png'].includes(mimeType)) {
-                    return {
-                        success: false,
-                        message: 'create data failed',
-                        error: 'files must have images extensions [jpg, jpeg, png]'
+                for (let i = 0; i < images.length; i++) {
+                    const mimeType = mime.lookup(images[i].originalname);
+                    if (!mimeType || !['image/jpeg', 'image/jpg', 'image/png'].includes(mimeType)) {
+                        return {
+                            success: false,
+                            message: 'create data failed',
+                            error: 'files must have images extensions [jpg, jpeg, png]'
+                        }
                     }
-                }
-                const date = new Date
+                    const date = new Date
 
-                dataImages = (baseUrl + path + 'EV' + date.getTime() + '.' + mime.extension(images.mimetype))
-                nameImages = ('EV' + date.getTime() + '.' + mime.extension(images.mimetype))
+                    dataImages.push(baseUrl + path + 'CL' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
+                    nameImages.push('CL' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
+                }
             }
 
             const validate = ClientSchema.parse({
@@ -95,7 +98,7 @@ export class ClientService {
                 images: dataImages
             })
 
-            const craeteEvent = await this.prismaService.client.create({
+            const craeteclient = await this.prismaService.client.create({
                 data: {
                     id: validate.id,
                     name: validate.name,
@@ -104,20 +107,21 @@ export class ClientService {
                 }
             })
 
-
-            if (images) {
-                try {
-                    const fileName = await this.saveFile(images, nameImages, './public/file/client');
-                    console.log(`File ${fileName} saved successfully.`);
-                } catch (error) {
-                    console.error('Failed to save file:', error);
+            if (images && images.length > 0) {
+                for (let i = 0; i < images.length; i++) {
+                    try {
+                        const fileName = await this.saveFile(images[i], nameImages[i], './public/file/client');
+                        console.log(`File ${fileName} saved successfully.`);
+                    } catch (error) {
+                        console.error('Failed to save file:', error);
+                    }
                 }
             }
 
             return {
                 success: true,
                 message: 'create data successfully',
-                data: craeteEvent
+                data: craeteclient
             }
         } catch (error) {
             return {
@@ -138,6 +142,126 @@ export class ClientService {
         } catch (error) {
             console.error('Error saving file:', error);
             throw new Error('Failed to save file');
+        }
+    }
+
+    async updateClient(id: string, req: clientUpdateRequest, images?: Array<Express.Multer.File>): Promise<WebResponse<clientResponse | any>> {
+        try {
+            const client = await this.prismaService.client.findFirst({
+                where: {
+                    id: id
+                }
+            })
+
+            if (!client) {
+                return {
+                    success: false,
+                    message: 'craete data failed',
+                    error: 'client not found'
+                }
+            }
+
+            let { name, desc } = req
+            const baseUrl = this.configService.get('BaseURL')
+            const path = '/file/client/'
+
+            let dataImages = [client.images]
+            let nameImages = []
+
+            if (images) {
+                for (let i = 0; i < images.length; i++) {
+                    const mimeType = mime.lookup(images[i].originalname);
+                    if (!mimeType || !['image/jpeg', 'image/jpg', 'image/png'].includes(mimeType)) {
+                        return {
+                            success: false,
+                            message: 'create data failed',
+                            error: 'files must have images extensions [jpg, jpeg, png]'
+                        }
+                    }
+                    const date = new Date
+
+                    dataImages = [(baseUrl + path + 'CL' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))]
+                    nameImages.push('CL' + i + date.getTime() + '.' + mime.extension(images[i].mimetype))
+                }
+            }
+
+
+
+            const validate = ClientUpdateSchema.parse({
+                id: id,
+                name: name,
+                desc: desc,
+                images: dataImages
+            })
+
+
+            const updateclient = await this.prismaService.client.update({
+                where: {
+                    id: id
+                },
+                data: {
+                    name: validate.name,
+                    desc: validate.desc,
+                    images: validate.images
+                }
+            })
+
+            if (images && images.length > 0) {
+                for (let i = 0; i < images.length; i++) {
+                    try {
+                        const fileName = await this.saveFile(images[i], nameImages[i], './public/file/client');
+                        console.log(`File ${fileName} saved successfully.`);
+                    } catch (error) {
+                        console.error('Failed to save file:', error);
+                    }
+                }
+            }
+
+            return {
+                success: true,
+                message: 'update data successfully',
+                data: updateclient
+            }
+        } catch (error) {
+            return {
+                success: false,
+                message: 'update data failed',
+                error: error
+            }
+        }
+    }
+
+    async deleteClient(id: string): Promise<WebResponse<clientResponse | any>> {
+        try {
+            let client = await this.prismaService.client.findFirst({
+                where: { id: id }
+            })
+
+            if (!client) {
+                return {
+                    success: false,
+                    message: 'delete data failed',
+                    error: 'client not found'
+                }
+            }
+
+            client = await this.prismaService.client.delete({
+                where: { id: id },
+            })
+
+            console.log(client);
+
+            return {
+                success: true,
+                message: 'delete data successfully',
+            }
+
+        } catch (error) {
+            return {
+                success: false,
+                message: 'delete data failed',
+                error: error
+            }
         }
     }
 }
