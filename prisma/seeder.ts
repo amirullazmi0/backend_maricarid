@@ -40,11 +40,11 @@ async function main() {
         data: [
             {
                 name: 'facebook',
-                link: 'https://www.facebook.com/rsudaa/?locale=id_ID'
+                link: 'https://www.facebook.com/'
             },
             {
                 name: 'instagram',
-                link: 'https://www.instagram.com/rsuddr.abdulaziz/'
+                link: 'https://www.instagram.com/'
             },
             {
                 name: 'twitter',
