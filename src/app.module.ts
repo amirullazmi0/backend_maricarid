@@ -8,6 +8,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { SocmedModule } from './socmed/socmed.module';
 import { ClientModule } from './client/client.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { ClientModule } from './client/client.module';
       rootPath: join(__dirname, '../../', 'public'),
       exclude: ['/api/(.*)'],
     }),
-    ClientModule, 
+    ClientModule,
+    MailModule, 
   ],
   controllers: [],
   providers: [],
