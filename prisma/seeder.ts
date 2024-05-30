@@ -12,7 +12,13 @@ async function main() {
                 fullName: 'MARICAR',
                 password: await bcrypt.hash('12345', 10)
 
-            }
+            },
+            {
+                email: `amirullazmi0@gmail.com`,
+                fullName: 'amirullazmi',
+                password: await bcrypt.hash('12345', 10)
+
+            },
         ]
     })
 
