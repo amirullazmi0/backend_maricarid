@@ -57,3 +57,5 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 /public/file/event/*
 /public/file/client/*
+!/public/file/event/.gitKeep
+!/public/file/client/.gitKeep
