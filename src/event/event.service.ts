@@ -147,8 +147,9 @@ export class EventService {
         try {
             const fileName = name;
 
-            await fs.promises.writeFile(`${folderPath}/${fileName}`, file.buffer);
-
+            const save = await fs.promises.writeFile(`${folderPath}/${fileName}`, file.buffer);
+            console.log(save);
+            console.log('save file successfully');
             return fileName;
         } catch (error) {
             console.error('Error saving file:', error);
